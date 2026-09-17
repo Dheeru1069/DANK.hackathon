@@ -1,13 +1,215 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>learnpath-ai</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LearnPath AI - Skill Gap Assessment</title>
+  <!-- Tailwind CSS CDN for instant styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen pb-12">
+
+  <!-- Header -->
+  <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto flex justify-between items-center">
+      <h1 class="text-xl font-bold flex items-center gap-2">LearnPath AI 🧠</h1>
+      <span class="text-xs bg-blue-800 px-3 py-1 rounded-full font-medium">10-Skill Diagnostic</span>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto p-4 md:p-6 mt-6">
+    
+    <!-- STEP 1: Landing Screen -->
+    <div id="step-1" class="bg-white p-8 rounded-xl shadow-sm border border-gray-200 text-center">
+      <h2 class="text-3xl font-extrabold text-gray-900 mb-4">Personalized Skill-Gap Analysis</h2>
+      <p class="text-gray-600 mb-6 leading-relaxed">
+        Answer 10 quick JavaScript questions to evaluate your competency across 10 core sub-skills. Our engine will map your strengths and generate an adaptive learning plan.
+      </p>
+      <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition duration-200">
+        Start Diagnostic Test
+      </button>
+    </div>
+
+    <!-- STEP 2: The Quiz Form -->
+    <div id="step-2" class="hidden bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200">
+      <div class="flex justify-between items-center mb-6 border-b pb-4">
+        <h2 class="text-2xl font-bold text-gray-800">JavaScript Assessment</h2>
+        <span class="text-sm font-semibold text-gray-500">10 Questions</span>
+      </div>
+
+      <form id="quizForm" class="space-y-6">
+        <!-- Container where JavaScript injects the 10 questions -->
+        <div id="questionsContainer" class="space-y-6"></div>
+
+        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow transition duration-200 mt-8">
+          Submit & Analyze Skill Gaps
+        </button>
+      </form>
+    </div>
+
+    <!-- STEP 3: Simulated Processing Screen -->
+    <div id="step-3" class="hidden text-center py-16 bg-white rounded-xl shadow-sm border border-gray-200">
+      <div class="animate-spin rounded-full h-14 w-14 border-4 border-blue-600 border-t-transparent mx-auto mb-6"></div>
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">Analyzing Your Competencies...</h2>
+      <p class="text-gray-500">Running Skill-Gap Engine & Generating Personalized Path...</p>
+    </div>
+
+    <!-- STEP 4: Results & AI Path Dashboard -->
+    <div id="step-4" class="hidden space-y-6">
+      <!-- Competency Summary -->
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-bold text-gray-800 mb-2">Your Sub-Skill Profile</h2>
+        <p class="text-sm text-gray-500 mb-4">Real-time mapping of your strengths and skill gaps:</p>
+        <div id="skillTags" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <!-- Adaptive Path -->
+      <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-blue-600">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">AI-Recommended Learning Path</h2>
+        <ul id="aiPath" class="space-y-4"></ul>
+      </div>
+
+      <button onclick="location.reload()" class="block w-full text-center text-blue-600 font-semibold underline text-sm py-2">
+        ← Retake Assessment
+      </button>
+    </div>
+
+  </main>
+
+  <script>
+    // 10-Question Bank Matrix
+    const questionBank = [
+      { id: "q1", sub_skill: "Variables", question: "Which keyword is used to declare a constant variable in JavaScript?", options: ["var", "let", "const", "def"], correct_answer: "const" },
+      { id: "q2", sub_skill: "Loops", question: "Which loop executes a block of code at least once before checking the condition?", options: ["for", "while", "do...while", "forEach"], correct_answer: "do...while" },
+      { id: "q3", sub_skill: "Arrays", question: "Which array method adds a new element to the end of an array?", options: ["push()", "pop()", "shift()", "unshift()"], correct_answer: "push()" },
+      { id: "q4", sub_skill: "Functions", question: "Which of the following represents a valid ES6 Arrow Function syntactically?", options: ["function myFunc() {}", "const myFunc = () => {}", "def myFunc():", "void myFunc() {}"], correct_answer: "const myFunc = () => {}" },
+      { id: "q5", sub_skill: "Data Types", question: "What does the 'typeof' operator return when executed on 'null'?", options: ["'null'", "'undefined'", "'object'", "'boolean'"], correct_answer: "'object'" },
+      { id: "q6", sub_skill: "Conditionals", question: "Which operator checks for both strictly equal value and strictly equal data type?", options: ["==", "=", "===", "!="], correct_answer: "===" },
+      { id: "q7", sub_skill: "Objects", question: "Which method returns an array containing all key names of a given object?", options: ["Object.keys()", "Object.values()", "Object.entries()", "Object.get()"], correct_answer: "Object.keys()" },
+      { id: "q8", sub_skill: "Array Methods", question: "Which method creates a new array by applying a function to every element?", options: ["filter()", "forEach()", "map()", "reduce()"], correct_answer: "map()" },
+      { id: "q9", sub_skill: "Scope", question: "Which keywords in JavaScript declare variables that are block-scoped?", options: ["var only", "let and const", "var and let", "const only"], correct_answer: "let and const" },
+      { id: "q10", sub_skill: "Asynchronous JS", question: "Which keyword is placed before a function to make it return a Promise?", options: ["promise", "defer", "async", "await"], correct_answer: "async" }
+    ];
+
+    // Screen Switcher Helper
+    function showStep(stepId) {
+      document.querySelectorAll('main > div').forEach(div => div.classList.add('hidden'));
+      document.getElementById(stepId).classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    function startQuiz() {
+      renderQuestions();
+      showStep('step-2');
+    }
+
+    // Render Questions Dynamically into HTML
+    function renderQuestions() {
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = questionBank.map((q, idx) => `
+        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <p class="font-bold text-gray-800 mb-3">${idx + 1}. ${q.question}</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            ${q.options.map(opt => `
+              <label class="flex items-center p-3 bg-white border border-gray-200 rounded-md hover:bg-blue-50 cursor-pointer text-sm font-medium transition">
+                <input type="radio" name="${q.id}" value="${opt}" required class="mr-3 accent-blue-600">
+                <span>${opt}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Evaluate Assessment Logic
+    function evaluateUserAssessment(questions, formData) {
+      const skillScores = {};
+
+      questions.forEach(q => {
+        const userAnswer = formData.get(q.id);
+        const isCorrect = userAnswer === q.correct_answer;
+
+        if (!skillScores[q.sub_skill]) {
+          skillScores[q.sub_skill] = { correct: 0, total: 0 };
+        }
+
+        skillScores[q.sub_skill].total += 1;
+        if (isCorrect) skillScores[q.sub_skill].correct += 1;
+      });
+
+      const skillGaps = {};
+      for (const [skill, scores] of Object.entries(skillScores)) {
+        const accuracy = scores.correct / scores.total;
+        if (accuracy === 1.0) skillGaps[skill] = "Mastered";
+        else if (accuracy >= 0.5) skillGaps[skill] = "Intermediate_Gap";
+        else skillGaps[skill] = "Beginner_Gap";
+      }
+
+      return skillGaps;
+    }
+
+    // Form Submission Event
+    document.getElementById("quizForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      showStep('step-3'); // Show loading spinner
+
+      const formData = new FormData(this);
+      const skillGaps = evaluateUserAssessment(questionBank, formData);
+
+      // Simulate a brief AI Processing delay for presentation impact
+      setTimeout(() => {
+        renderDashboard(skillGaps);
+        showStep('step-4');
+      }, 1500);
+    });
+
+    // Render Results & Adaptive Recommendations
+    function renderDashboard(gaps) {
+      const tagsContainer = document.getElementById('skillTags');
+      const pathContainer = document.getElementById('aiPath');
+      tagsContainer.innerHTML = '';
+      pathContainer.innerHTML = '';
+
+      for (const [skill, status] of Object.entries(gaps)) {
+        // Build Skill Badges
+        const tag = document.createElement('span');
+        let badgeColor = status === 'Mastered' ? 'bg-green-100 text-green-800 border-green-200' :
+                         status === 'Intermediate_Gap' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                         'bg-red-100 text-red-800 border-red-200';
+        
+        tag.className = `px-3 py-1 rounded-full text-xs font-bold border ${badgeColor}`;
+        tag.textContent = `${skill}: ${status.replace('_', ' ')}`;
+        tagsContainer.appendChild(tag);
+
+        // Build Adaptive Path Cards
+        const item = document.createElement('li');
+        item.className = "p-4 rounded-lg border border-gray-100 flex items-start gap-4 shadow-sm bg-gray-50";
+
+        if (status === 'Beginner_Gap') {
+          item.innerHTML = `
+            <span class="text-2xl">🚨</span>
+            <div>
+              <h3 class="font-bold text-red-700">Foundational Review Required: ${skill}</h3>
+              <p class="text-xs text-gray-600 mt-1">Status: Baseline concept missed. Recommended 5-minute video tutorial and baseline exercises before advancing.</p>
+            </div>`;
+        } else if (status === 'Intermediate_Gap') {
+          item.innerHTML = `
+            <span class="text-2xl">⚠️</span>
+            <div>
+              <h3 class="font-bold text-yellow-700">Targeted Practice: ${skill}</h3>
+              <p class="text-xs text-gray-600 mt-1">Status: Partial mastery detected. Recommended 3 interactive code challenges to reinforce understanding.</p>
+            </div>`;
+        } else {
+          item.innerHTML = `
+            <span class="text-2xl">✅</span>
+            <div>
+              <h3 class="font-bold text-green-700">Competency Verified: ${skill}</h3>
+              <p class="text-xs text-gray-600 mt-1">Status: Mastered! Basic tutorials skipped. Advanced module and real-world project unlocked.</p>
+            </div>`;
+        }
+        pathContainer.appendChild(item);
+      }
+    }
+  </script>
+</body>
 </html>
