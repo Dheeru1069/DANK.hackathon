@@ -1,4 +1,11 @@
 import { useState } from "react";
+
+import {
+  questionBank,
+  evaluateAssessment,
+  getOverallScore,
+  getRecommendations,
+} from "./assessmentLogic";
 import {
   Brain,
   Target,
@@ -380,19 +387,19 @@ function AssessmentPage({ answers, setAnswers, onSubmit }) {
       <div className="assessment-card">
         <div className="assessment-progress">
           <span>Diagnostic Assessment</span>
-          <span>{Object.keys(answers).length}/5 answered</span>
+          {Object.keys(answers).length}/{questionBank.length} answered
         </div>
 
         <div className="progress-bg large">
           <div
             className="progress-fill"
             style={{
-              width: `${(Object.keys(answers).length / 5) * 100}%`,
+              width: `${(Object.keys(answers).length / questionBank.length) * 100}%`,
             }}
           ></div>
         </div>
 
-        {questions.map((q, index) => (
+        {questionBank.map((q, index) => (
           <div className="question" key={index}>
             <div className="question-number">0{index + 1}</div>
             <div className="question-content">
